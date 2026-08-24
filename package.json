@@ -1,0 +1,44 @@
+{
+  "name": "credencial-print-agent",
+  "version": "0.1.0",
+  "description": "Agente local de impresion duplex de credenciales para Zebra ZC300",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9",
+    "express": "^4.21.1",
+    "pdf-to-printer": "^5.8.0"
+  },
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "solutions.cuatropuntocero.credencialprintagent",
+    "productName": "Credencial Print Agent",
+    "files": [
+      "main.js",
+      "src/**/*",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.png"
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "build/icon.png"
+    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://TODO-definir-servidor-de-releases/"
+      }
+    ]
+  }
+}
