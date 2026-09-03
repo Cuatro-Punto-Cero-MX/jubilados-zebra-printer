@@ -4,6 +4,24 @@
 
 ## Al día — 2026-09-03
 
+**✅ Primer print en hardware Windows real (Zebra ZC300).** Con el fix v0.1.1
+abajo, el agente arranca bien en Windows, aparece en la bandeja y `/health`
+responde `platform: win32`. Se imprimió una credencial de punta a punta desde la
+app Rails. (Detalle de operación: hay que elegir la impresora correcta desde el
+menú de la bandeja — la primera vez se había elegido otra y no imprimía.)
+
+**Auto-update por GitHub Releases (v0.1.2).** `build.publish` cambió de un
+placeholder `generic` a `provider: github` (owner `Cuatro-Punto-Cero-MX`, repo
+`jubilados-zebra-printer`). El repo es público, así que `electron-updater` revisa
+las Releases sin token. Con esto, `git push --tags` → workflow publica la Release
+→ los agentes instalados se actualizan al reiniciar. También quita el
+`net::ERR_NAME_NOT_RESOLVED` que salía en `agent.log` al intentar contactar el
+placeholder.
+
+**Log más liviano (v0.1.2).** `server.js` ya no vuelca el base64 completo de las
+imágenes en `agent.log` — registra `<data:image/png;base64, N chars>` en su lugar
+(`describeSource`).
+
 **Repo en GitHub + build por CI.** El agente ahora vive en
 `github.com/Cuatro-Punto-Cero-MX/jubilados-zebra-printer` (público). El `.exe` se
 compila en GitHub Actions (`.github/workflows/build-windows.yml`, runner

@@ -122,10 +122,12 @@ Deja el instalador en `dist/`. Útil si no hay acceso a CI o quieres iterar ráp
 
 - **Sin firma de código.** Windows SmartScreen va a advertir al instalar (*Más información* → *Ejecutar
   de todas formas*). Falta evaluar un certificado de firma para Windows.
-- **Sin auto-update todavía.** `electron-updater` ya está integrado en `main.js` (solo activo en builds
-  empaquetados), pero `build.publish.url` en `package.json` es un placeholder — hay que redistribuir el
-  `.exe` a mano cada versión. Cuando se defina el host del feed (GitHub Releases o servidor propio), el
-  workflow ya genera el `latest.yml` y el `.blockmap` que ese mecanismo necesita.
+- **Auto-update vía GitHub Releases.** `electron-updater` (`build.publish` → `provider: github`,
+  activo solo en builds empaquetados) revisa las Releases del repo al arrancar y, si hay una versión
+  más nueva, la descarga y la instala al cerrar la app. Como el repo es público no necesita token. Por
+  eso alcanza con hacer `git tag vX.Y.Z && git push --tags`: el workflow publica la Release y los
+  agentes instalados se actualizan solos. Sin firma de código, la actualización funciona pero cada
+  instalación/actualización pasa por el aviso de SmartScreen.
 - El repo es público → los minutos de Actions son ilimitados. Aun así el workflow solo corre en tag
   `v*` o a mano (no en cada push), para que el historial de Releases quede limpio.
 

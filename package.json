@@ -1,6 +1,6 @@
 {
   "name": "credencial-print-agent",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Agente local de impresion duplex de credenciales para Zebra ZC300",
   "main": "main.js",
   "private": true,
@@ -40,8 +40,9 @@
     },
     "publish": [
       {
-        "provider": "generic",
-        "url": "https://TODO-definir-servidor-de-releases/"
+        "provider": "github",
+        "owner": "Cuatro-Punto-Cero-MX",
+        "repo": "jubilados-zebra-printer"
       }
     ]
   }

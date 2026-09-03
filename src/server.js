@@ -3,6 +3,18 @@ const fs = require('fs');
 const { printJob, listPrinters, renderCardPdf } = require('./printEngine');
 const { log } = require('./logger');
 
+// El navegador manda las imágenes como data: URI en base64 (cientos de KB cada
+// una). Para el log solo interesa el tipo y el tamaño, no el contenido.
+function describeSource(src) {
+  if (typeof src !== 'string') return src;
+  if (src.startsWith('data:')) {
+    const comma = src.indexOf(',');
+    const meta = comma === -1 ? src.slice(0, 40) : src.slice(0, comma);
+    return `<${meta}, ${src.length} chars>`;
+  }
+  return src; // ruta de archivo o URL — corto, se deja tal cual
+}
+
 function startServer(config) {
   const app = express();
   app.use(express.json({ limit: '25mb' }));
@@ -45,7 +57,7 @@ function startServer(config) {
   app.post('/print', async (req, res) => {
     const jobSummary = req.body.pdfPath
       ? { pdfPath: req.body.pdfPath }
-      : { frontImage: req.body.frontImage, backImage: req.body.backImage };
+      : { frontImage: describeSource(req.body.frontImage), backImage: describeSource(req.body.backImage) };
     try {
       const result = await printJob(req.body, config);
       log(`OK /print ${JSON.stringify(jobSummary)} -> ${result}`);
