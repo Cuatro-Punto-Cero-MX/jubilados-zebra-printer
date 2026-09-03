@@ -22,6 +22,14 @@ placeholder.
 imágenes en `agent.log` — registra `<data:image/png;base64, N chars>` en su lugar
 (`describeSource`).
 
+**Fix nombre de artefacto (v0.1.3).** `productName` tiene espacios →
+electron-builder generaba `latest.yml` apuntando a
+`Credencial-Print-Agent-Setup-X.Y.Z.exe` (guiones) pero GitHub subía el asset
+como `Credencial.Print.Agent.Setup.X.Y.Z.exe` (puntos), y el auto-update daba 404.
+Se fijó `build.nsis.artifactName = "${name}-setup-${version}.${ext}"` →
+`credencial-print-agent-setup-X.Y.Z.exe`, sin espacios, mismo nombre en el yml y
+en el asset. **El auto-update encadena bien de v0.1.3 en adelante.**
+
 **Repo en GitHub + build por CI.** El agente ahora vive en
 `github.com/Cuatro-Punto-Cero-MX/jubilados-zebra-printer` (público). El `.exe` se
 compila en GitHub Actions (`.github/workflows/build-windows.yml`, runner
