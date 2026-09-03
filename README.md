@@ -161,12 +161,18 @@ desde el menú de la bandeja del sistema ("Ver config" / "Ver logs").
 ## Arquitectura
 
 ```
-main.js              — proceso principal: tray, arranque del server, autoUpdater
+main.js              — proceso principal: tray, arranque del server
 src/config.js         — carga/guarda config.json en userData
 src/logger.js         — log a archivo plano
 src/printEngine.js    — render HTML→PDF y llamada a lp/CUPS (Mac) o pdf-to-printer/SumatraPDF (Windows)
 src/server.js         — API HTTP local (Express): /health, /printers, /preview, /print
+src/updater.js        — electron-updater: chequeo al arrancar + "Buscar actualizaciones ahora" del tray
 ```
+
+El menú de la bandeja tiene **"Buscar actualizaciones ahora"**: fuerza el chequeo contra GitHub
+Releases sin esperar al siguiente reinicio. Si hay versión nueva la descarga y ofrece reiniciar para
+aplicarla; si ya estás al día lo dice. (No reinstala la misma versión — para eso, bajar el `.exe` del
+release a mano.)
 
 En Mac el dúplex se logra mandando el PDF por CUPS con `lp -o DualSidePrinting=true` (más
 `RibbonCombination` si se necesita). En Windows no hay CUPS, así que se manda el PDF vía el paquete

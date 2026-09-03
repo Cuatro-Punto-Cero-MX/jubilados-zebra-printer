@@ -22,6 +22,12 @@ placeholder.
 imágenes en `agent.log` — registra `<data:image/png;base64, N chars>` en su lugar
 (`describeSource`).
 
+**"Buscar actualizaciones ahora" en el menú de la bandeja (v0.1.4).** El manejo de
+`electron-updater` se movió a `src/updater.js`: chequeo silencioso al arrancar +
+opción manual en el tray que sí da feedback en diálogos (no hay ventana). Si
+encuentra versión nueva la descarga y ofrece "Reiniciar ahora". No reinstala la
+misma versión — para eso, bajar el `.exe` del release a mano.
+
 **Fix nombre de artefacto (v0.1.3).** `productName` tiene espacios →
 electron-builder generaba `latest.yml` apuntando a
 `Credencial-Print-Agent-Setup-X.Y.Z.exe` (guiones) pero GitHub subía el asset

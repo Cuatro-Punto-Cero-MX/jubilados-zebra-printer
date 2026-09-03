@@ -4,6 +4,7 @@ const { loadConfig, saveConfig, configPath } = require('./src/config');
 const { startServer } = require('./src/server');
 const { listPrinters } = require('./src/printEngine');
 const { log, logPath } = require('./src/logger');
+const { initAutoUpdater, checkForUpdatesNow } = require('./src/updater');
 
 let tray = null;
 let server = null;
@@ -46,6 +47,7 @@ async function buildTrayMenu() {
     { label: 'Impresora:', enabled: false },
     ...printerItems,
     { type: 'separator' },
+    { label: 'Buscar actualizaciones ahora', click: () => checkForUpdatesNow() },
     { label: 'Ver logs', click: () => shell.showItemInFolder(logPath()) },
     { label: 'Ver config', click: () => shell.showItemInFolder(configPath()) },
     { type: 'separator' },
@@ -82,15 +84,7 @@ app.whenReady().then(async () => {
     log(`No se pudo crear el ícono de bandeja: ${err.message}. El agente sigue corriendo en 127.0.0.1:${config.port}.`);
   }
 
-  if (app.isPackaged) {
-    try {
-      const { autoUpdater } = require('electron-updater');
-      autoUpdater.logger = { info: log, warn: log, error: log, debug: () => {} };
-      autoUpdater.checkForUpdatesAndNotify().catch((err) => log(`autoUpdater error: ${err.message}`));
-    } catch (err) {
-      log(`No se pudo inicializar electron-updater: ${err.message}`);
-    }
-  }
+  initAutoUpdater();
 });
 
 app.on('window-all-closed', (event) => {
