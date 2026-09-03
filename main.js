@@ -9,6 +9,11 @@ let tray = null;
 let server = null;
 let config = null;
 
+// La app no tiene ventana ni consola visible cuando está empaquetada: sin esto,
+// cualquier excepción en el arranque la mata en silencio (ni bandeja ni error).
+process.on('uncaughtException', (err) => log(`uncaughtException: ${err && err.stack || err}`));
+process.on('unhandledRejection', (reason) => log(`unhandledRejection: ${reason && reason.stack || reason}`));
+
 function trayIconPath() {
   // En macOS, un archivo *Template.png hace que el ícono se adapte a modo claro/oscuro.
   return process.platform === 'darwin'
@@ -61,9 +66,21 @@ app.whenReady().then(async () => {
   config = loadConfig();
   server = startServer(config);
 
-  tray = new Tray(nativeImage.createFromPath(trayIconPath()));
-  tray.setToolTip('Credencial Print Agent');
-  await refreshTray();
+  // En Windows `new Tray()` con una imagen vacía (ícono no encontrado en el
+  // paquete) lanza y tumba el arranque. Se degrada a un ícono vacío y se deja
+  // constancia en el log en vez de morir — el servidor HTTP ya está arriba.
+  let trayImage = nativeImage.createFromPath(trayIconPath());
+  if (trayImage.isEmpty()) {
+    log(`Ícono de bandeja no encontrado en ${trayIconPath()}; usando ícono vacío`);
+    trayImage = nativeImage.createEmpty();
+  }
+  try {
+    tray = new Tray(trayImage);
+    tray.setToolTip('Credencial Print Agent');
+    await refreshTray();
+  } catch (err) {
+    log(`No se pudo crear el ícono de bandeja: ${err.message}. El agente sigue corriendo en 127.0.0.1:${config.port}.`);
+  }
 
   if (app.isPackaged) {
     try {

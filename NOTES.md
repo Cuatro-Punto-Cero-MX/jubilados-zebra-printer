@@ -2,6 +2,35 @@
 
 > Ver plan completo en `/Users/isaac/.claude/plans/te-acabo-de-conectar-lovely-walrus.md`
 
+## Al día — 2026-09-03
+
+**Repo en GitHub + build por CI.** El agente ahora vive en
+`github.com/Cuatro-Punto-Cero-MX/jubilados-zebra-printer` (público). El `.exe` se
+compila en GitHub Actions (`.github/workflows/build-windows.yml`, runner
+`windows-latest`) porque electron-builder no cruza-compila confiable desde macOS
+ARM. Sacar versión: subir `version` en `package.json`, `git tag vX.Y.Z && git push
+--tags` → publica un Release con el instalador. Ver README.
+
+**v0.1.0 fallaba en silencio en Windows** (primer intento en hardware real): el
+`.exe` se instalaba pero al abrirlo no aparecía nada — ni bandeja ni ventana ni
+error. Dos bugs de empaquetado:
+
+1. `build/` (donde está el ícono de bandeja) no estaba en `build.files` de
+   `package.json`, así que `build/icon.png` no se incluía en el `app.asar`. En
+   Windows `new Tray()` con una imagen vacía **lanza excepción**, y como pasa
+   dentro del `.then()` de `app.whenReady()` sin handler, la app queda como
+   proceso zombie invisible (el `window-all-closed` preventDefault evita que
+   cierre). En Mac no había reventado porque casi siempre se corrió con `npm
+   start` (sin empaquetar), donde el ícono sí está en disco.
+2. `pdf-to-printer` trae `dist/SumatraPDF-3.4.6-32.exe` empaquetado y lo resuelve
+   con `path.join(__dirname, ...)`. Dentro del `app.asar` no se puede ejecutar un
+   binario — habría reventado al primer print aunque el arranque funcionara.
+
+Fix (v0.1.1): agregado `build/**/*` a `files`, `asarUnpack` de
+`node_modules/pdf-to-printer/**`, y handlers de `uncaughtException` /
+`unhandledRejection` + guard alrededor de `new Tray()` en `main.js` para que un
+ícono faltante ya no mate el arranque y quede en el log.
+
 ## Al día — 2026-08-21
 
 **Conectado con el backend Rails (`sistema-web-para-credencializacion`).** El botón "Imprimir credencial" en `personas#show` dispara el flujo desde JS del navegador (no desde Rails backend — en producción Rails vive en un servidor remoto que no puede alcanzar el `127.0.0.1:8942` de la máquina de recepción). El navegador descarga las imágenes ya autenticado (misma sesión de Devise), las convierte a `data:` URI, y llama `POST /print` directo. Se agregó soporte CORS en `src/server.js` para que el `fetch()` cross-origin desde el origen de Rails no sea bloqueado por el navegador.

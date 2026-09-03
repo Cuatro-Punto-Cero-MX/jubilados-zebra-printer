@@ -1,6 +1,6 @@
 {
   "name": "credencial-print-agent",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Agente local de impresion duplex de credenciales para Zebra ZC300",
   "main": "main.js",
   "private": true,
@@ -23,7 +23,11 @@
     "files": [
       "main.js",
       "src/**/*",
+      "build/**/*",
       "node_modules/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/pdf-to-printer/**"
     ],
     "mac": {
       "target": ["dmg"],
