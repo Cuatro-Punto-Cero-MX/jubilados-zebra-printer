@@ -68,18 +68,67 @@ código de impresión para Windows (`printPdfWindows` en `src/printEngine.js`, v
 en Windows — si algo no funciona como se describe arriba, es información nueva y vale la pena
 documentarla en `NOTES.md`.
 
-### Generar un instalador (`.exe`) para no depender de Node en la máquina final
+## Generar el instalador (`.exe`)
+
+El `.exe` empaqueta todo (Node incluido), así que en la máquina de recepción **no** hace falta instalar
+Node — se salta los pasos 3-4 de arriba; el resto (driver Zebra, elegir impresora desde la bandeja)
+sigue igual.
+
+### Opción A — GitHub Actions (recomendado)
+
+`electron-builder` **no cruza-compila de forma confiable para Windows desde macOS** (Apple Silicon
+necesitaría Wine y es frágil), así que el instalador se compila en un runner Windows real en CI.
+
+Workflow: [`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml). Corre en
+`windows-latest`, hace `npm ci` → `electron-builder --win` y sube `*.exe` + `latest.yml` + `*.blockmap`.
+
+**Sacar una versión nueva** (compila y publica un GitHub Release con el `.exe` adjunto):
 
 ```
+# 1. subir el número de versión
+npm version patch        # o: minor / major — actualiza package.json y crea el commit + tag
+git push && git push --tags
+```
+
+`npm version` ya crea el tag `vX.Y.Z`; el `git push --tags` lo manda y eso dispara el workflow. Cuando
+termina (~4-5 min) el `.exe` queda en
+`github.com/Cuatro-Punto-Cero-MX/jubilados-zebra-printer/releases/tag/vX.Y.Z`.
+
+**Solo un build de prueba, sin publicar Release**: pestaña **Actions** → *Build Windows installer* →
+**Run workflow**. El `.exe` queda como *Artifact* de esa corrida (se baja desde la misma página; expira
+a los 90 días).
+
+**Bajar el `.exe`** en la máquina de recepción (repo privado → requiere sesión de GitHub con acceso al
+repo):
+
+```
+gh release download vX.Y.Z --repo Cuatro-Punto-Cero-MX/jubilados-zebra-printer --pattern '*.exe'
+```
+
+o desde la página de Releases en el navegador.
+
+### Opción B — build local en Windows
+
+En una máquina Windows con Node 20+:
+
+```
+npm ci
 npm run dist
 ```
 
-Esto usa `electron-builder` (configurado como `nsis` en `package.json`) y deja un instalador en `dist/`.
-Instalarlo en la máquina Windows evita los pasos 3-4 de arriba — el resto (driver Zebra, elegir
-impresora desde la bandeja) sigue igual. Nota: el auto-updater (`electron-updater`, ya integrado en
-`main.js`) todavía no tiene un servidor de releases real configurado (`build.publish.url` en
-`package.json` es un placeholder) — por ahora hay que redistribuir el instalador a mano cada vez que
-cambie el código.
+Deja el instalador en `dist/`. Útil si no hay acceso a CI o quieres iterar rápido sin gastar minutos de
+runner.
+
+### Notas
+
+- **Sin firma de código.** Windows SmartScreen va a advertir al instalar (*Más información* → *Ejecutar
+  de todas formas*). Falta evaluar un certificado de firma para Windows.
+- **Sin auto-update todavía.** `electron-updater` ya está integrado en `main.js` (solo activo en builds
+  empaquetados), pero `build.publish.url` en `package.json` es un placeholder — hay que redistribuir el
+  `.exe` a mano cada versión. Cuando se defina el host del feed (GitHub Releases o servidor propio), el
+  workflow ya genera el `latest.yml` y el `.blockmap` que ese mecanismo necesita.
+- El plan free de la org da 2000 min/mes de Actions y **el runner Windows cuenta doble** — cada build
+  gasta ~8-10 min de esa cuota. Por eso el workflow no corre en cada push, solo en tag `v*` o a mano.
 
 ## API HTTP local
 
