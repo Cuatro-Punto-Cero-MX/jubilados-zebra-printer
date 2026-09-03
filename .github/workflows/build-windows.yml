@@ -1,0 +1,55 @@
+name: Build Windows installer
+
+# Compila el instalador NSIS (.exe) del agente de impresión en un runner Windows
+# real — electron-builder no cruza-compila de forma confiable desde macOS ARM.
+#
+#  - Ejecución manual (pestaña Actions -> "Build Windows installer" -> Run
+#    workflow): deja el .exe como artefacto descargable de la corrida.
+#  - Push de tag "v*" (ej. git tag v0.1.1 && git push --tags): además publica un
+#    GitHub Release con el .exe adjunto, para tener un link estable que compartir.
+#
+# No corre en cada push para no gastar minutos de runner Windows (cuentan 2x en
+# el plan free). Sin auto-update todavía: se instala a mano.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # necesario para crear el Release en push de tag
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # --publish never: no intentar subir a build.publish.url (hoy es un
+      # placeholder). El Release lo maneja el paso de abajo, no electron-builder.
+      - run: npm run dist -- --win --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: credencial-print-agent-windows
+          path: |
+            dist/*.exe
+            dist/*.blockmap
+            dist/latest.yml
+          if-no-files-found: error
+
+      - name: Publicar Release (solo en push de tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.exe
+            dist/*.blockmap
+            dist/latest.yml
