@@ -98,14 +98,14 @@ termina (~4-5 min) el `.exe` queda en
 **Run workflow**. El `.exe` queda como *Artifact* de esa corrida (se baja desde la misma página; expira
 a los 90 días).
 
-**Bajar el `.exe`** en la máquina de recepción (repo privado → requiere sesión de GitHub con acceso al
-repo):
+**Bajar el `.exe`** en la máquina de recepción. El repo es público, así que el link funciona sin cuenta
+de GitHub:
 
 ```
-gh release download vX.Y.Z --repo Cuatro-Punto-Cero-MX/jubilados-zebra-printer --pattern '*.exe'
+https://github.com/Cuatro-Punto-Cero-MX/jubilados-zebra-printer/releases/latest
 ```
 
-o desde la página de Releases en el navegador.
+o por CLI: `gh release download --repo Cuatro-Punto-Cero-MX/jubilados-zebra-printer --pattern '*.exe'`.
 
 ### Opción B — build local en Windows
 
@@ -116,8 +116,7 @@ npm ci
 npm run dist
 ```
 
-Deja el instalador en `dist/`. Útil si no hay acceso a CI o quieres iterar rápido sin gastar minutos de
-runner.
+Deja el instalador en `dist/`. Útil si no hay acceso a CI o quieres iterar rápido en local.
 
 ### Notas
 
@@ -127,8 +126,8 @@ runner.
   empaquetados), pero `build.publish.url` en `package.json` es un placeholder — hay que redistribuir el
   `.exe` a mano cada versión. Cuando se defina el host del feed (GitHub Releases o servidor propio), el
   workflow ya genera el `latest.yml` y el `.blockmap` que ese mecanismo necesita.
-- El plan free de la org da 2000 min/mes de Actions y **el runner Windows cuenta doble** — cada build
-  gasta ~8-10 min de esa cuota. Por eso el workflow no corre en cada push, solo en tag `v*` o a mano.
+- El repo es público → los minutos de Actions son ilimitados. Aun así el workflow solo corre en tag
+  `v*` o a mano (no en cada push), para que el historial de Releases quede limpio.
 
 ## API HTTP local
 

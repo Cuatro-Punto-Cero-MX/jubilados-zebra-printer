@@ -8,8 +8,9 @@ name: Build Windows installer
 #  - Push de tag "v*" (ej. git tag v0.1.1 && git push --tags): además publica un
 #    GitHub Release con el .exe adjunto, para tener un link estable que compartir.
 #
-# No corre en cada push para no gastar minutos de runner Windows (cuentan 2x en
-# el plan free). Sin auto-update todavía: se instala a mano.
+# No corre en cada push, solo cuando se saca versión (tag) o a mano — así el
+# historial de Releases queda limpio. El repo es público: los minutos de Actions
+# son ilimitados. Sin auto-update todavía: se instala a mano.
 
 on:
   push:
